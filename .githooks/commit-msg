@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# Commit message hook for conventional commits validation
+# No external dependencies required - pure bash implementation
+
+set -euo pipefail
+
+# Color codes for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Enable colors only if stdout is a terminal
+if [[ ! -t 1 ]]; then
+    RED=''
+    GREEN=''
+    YELLOW=''
+    NC=''
+fi
+
+COMMIT_MSG_FILE="$1"
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Allow merge commits, revert commits, and version tags
+if echo "$COMMIT_MSG" | grep -qE "^(Merge|Revert|Version)"; then
+    echo -e "${GREEN}✓ Special commit type allowed: merge/revert/version${NC}"
+    exit 0
+fi
+
+# Conventional commit regex pattern
+# type(scope): description
+CONVENTIONAL_COMMIT_REGEX='^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\([a-zA-Z0-9_-]+\))?: .{1,72}$'
+
+# Check conventional commit format
+if ! echo "$COMMIT_MSG" | grep -qE "$CONVENTIONAL_COMMIT_REGEX"; then
+    echo -e "${RED}✗ Invalid commit message format${NC}"
+    echo -e ""
+    echo -e "${YELLOW}Commit messages must follow conventional commit format:${NC}"
+    echo -e "${GREEN}type(scope): description${NC}"
+    echo -e ""
+    echo -e "${YELLOW}Valid types: feat, fix, docs, style, refactor, test, chore, perf, ci, build, revert${NC}"
+    echo -e "${YELLOW}Optional scope: any descriptive name in parentheses${NC}"
+    echo -e "${YELLOW}Description: brief, imperative mood (max 72 chars)${NC}"
+    echo -e ""
+    echo -e "${YELLOW}Examples:${NC}"
+    echo -e "${GREEN}feat(cli): add new command option${NC}"
+    echo -e "${GREEN}fix(auth): resolve login timeout issue${NC}"
+    echo -e "${GREEN}docs: update installation instructions${NC}"
+    echo -e "${GREEN}test: add coverage for validation logic${NC}"
+    echo -e ""
+    echo -e "${YELLOW}Your commit message:${NC}"
+    echo -e "${RED}$COMMIT_MSG${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}✓ Commit message follows conventional format${NC}"
+exit 0
