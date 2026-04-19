@@ -20,11 +20,12 @@ Instead of just trying the same thing over and over and hoping it gets better, t
 
 Newton includes a production workflow runner with YAML-defined tasks and deterministic execution semantics:
 
-- Workflow commands: `newton workflow run|lint|validate|dot|explain|resume|checkpoints|artifacts|webhook`
+- Workflow commands: `newton run|lint|validate|dot|explain|resume|checkpoints|artifacts|webhook` (plus `newton log`, `newton serve`, and `newton monitor` for history, APIs, and human-in-the-loop)
 - Safety checks: lint rules, expression precompile validation, shell opt-in, reachability analysis
 - Deterministic completion: goal gates, terminal tasks, explicit completion policy, stable error codes
 - Runtime durability: checkpoint persistence, resume support, artifact routing/cleanup, execution warnings
 - Authoring ergonomics: transform pipeline with macro expansion, `include_if` filtering, `{{ ... }}` interpolation, and `$expr` evaluation
+- **Sub-workflows**: nest another workflow file from a task (`WorkflowOperator`), with merged context and triggers, workspace path sandboxing, and a nesting depth limit
 
 ### Built-in Workflow Operators
 
@@ -35,8 +36,11 @@ Newton includes a production workflow runner with YAML-defined tasks and determi
 | `SetContextOperator` | Deep-merge a patch object into the global workflow context |
 | `ReadControlFileOperator` | Read and parse a JSON file from a path resolved at runtime |
 | `AssertCompletedOperator` | Assert that a set of task IDs have completed before proceeding |
+| `WorkflowOperator` | Run a nested workflow from another YAML file; optional merged `context` and `triggers`; returns child execution identifiers |
 | `HumanApprovalOperator` | Pause for a boolean approve/reject decision from a human operator |
 | `HumanDecisionOperator` | Pause for a multiple-choice selection from a human operator |
+
+Other built-in operators exist (for example for agents and GitHub); see the Newton repository README and `newton explain` for your workflow.
 
 ## Installation
 
@@ -100,10 +104,10 @@ To swap in custom evaluators, advisors, or executors, either pass `--evaluator`,
 
 ```bash
 newton --version
-newton 0.5.33
+newton 0.5.78
 
 $ newton --help
-newton 0.5.33
+newton 0.5.78
 Newton CLI for optimization and workflow automation
 
 Usage: newton <COMMAND>
